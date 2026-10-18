@@ -56,6 +56,11 @@ cd native-android
 内容同步任务会自动把 `../web/data` 复制到 `app/src/main/assets/content/`。
 APK：`app/build/outputs/apk/debug/app-debug.apk`。
 
+当前交付（2026-10-18）：桌面副本
+`C:\Users\fjh28\Desktop\Daily-English-Native-0.1.0-debug.apk`，
+SHA-256 `bf6afd65bd30fd96f218e2c0900185ce7b462b701bc854fb5d46604dd77fa32d`。
+重新构建后校验和会变化。
+
 ## 测试
 
 ```powershell
