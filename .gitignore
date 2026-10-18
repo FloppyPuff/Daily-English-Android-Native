@@ -13,3 +13,9 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Generated content assets
+app/src/main/assets/content/
+
+# IDE
+.idea/
