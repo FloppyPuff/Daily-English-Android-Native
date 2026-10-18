@@ -44,11 +44,12 @@ class AppViewModel @Inject constructor(
 
   init {
     viewModelScope.launch {
-      progress.load()
-      auth.bootstrap()
+      runCatching { progress.load() }
+      runCatching { auth.bootstrap() }
       sync.start()
       booting.value = false
-      if (auth.state.value is AuthState.Anonymous && !(auth.state.value as AuthState.Anonymous).guest) {
+      val current = auth.state.value
+      if (current is AuthState.Anonymous && !current.guest) {
         showAuth.value = true
       }
     }

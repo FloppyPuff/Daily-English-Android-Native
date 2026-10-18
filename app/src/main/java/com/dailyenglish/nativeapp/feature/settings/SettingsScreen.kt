@@ -60,8 +60,8 @@ fun SettingsScreen(
   ) {
     item {
       Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text("学习设置", style = MaterialTheme.typography.headlineLarge)
-        Text("按你的节奏学习，进度留在自己手里。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("按你的节奏学习。", style = MaterialTheme.typography.headlineLarge)
+        Text("目标、账号和专注时长都在这里。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
       }
     }
     item { ExamSwitch(exam, { exam = it }) }

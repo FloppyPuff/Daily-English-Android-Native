@@ -121,7 +121,7 @@ fun TodayScreen(
             }
           }
           plan.steps.forEachIndexed { index, step ->
-            PlanRow(step, active = plan.active == step.id, onClick = {
+            PlanRow(step, index, active = plan.active == step.id, onClick = {
               when (step.id) {
                 "review" -> onReview()
                 "new" -> onStartWords()
@@ -174,21 +174,28 @@ fun TodayScreen(
 }
 
 @Composable
-private fun PlanRow(step: PlanStep, active: Boolean, onClick: () -> Unit) {
+private fun PlanRow(step: PlanStep, index: Int, active: Boolean, onClick: () -> Unit) {
   Row(
     modifier = Modifier.fillMaxWidth(),
     verticalAlignment = Alignment.CenterVertically,
   ) {
-    Surface(
-      shape = CircleShape,
-      color = if (step.pending == 0 && step.total > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-      modifier = Modifier.size(34.dp),
-    ) {
+    val completed = step.pending == 0 && step.total > 0
+    val container = when {
+      completed -> MaterialTheme.colorScheme.primary
+      active -> MaterialTheme.colorScheme.primaryContainer
+      else -> MaterialTheme.colorScheme.surface
+    }
+    val content = when {
+      completed -> MaterialTheme.colorScheme.onPrimary
+      active -> MaterialTheme.colorScheme.onPrimaryContainer
+      else -> MaterialTheme.colorScheme.primary
+    }
+    Surface(shape = CircleShape, color = container, modifier = Modifier.size(34.dp)) {
       Box(contentAlignment = Alignment.Center) {
-        if (step.pending == 0 && step.total > 0) {
-          Icon(Icons.Outlined.Check, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp))
+        if (completed) {
+          Icon(Icons.Outlined.Check, contentDescription = null, tint = content, modifier = Modifier.size(18.dp))
         } else {
-          Text(step.id.take(1).uppercase(), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+          Text(String.format("%02d", index + 1), style = MaterialTheme.typography.labelMedium, color = content)
         }
       }
     }
@@ -232,7 +239,7 @@ fun PracticeScreen(
   ) {
     item {
       Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text("自由练习", style = MaterialTheme.typography.headlineLarge)
+        Text("想练哪一项？", style = MaterialTheme.typography.headlineLarge)
         Text("想多学一点，或专门巩固某一项，都从这里开始。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
       }
     }

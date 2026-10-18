@@ -81,8 +81,8 @@ fun SentencesScreen(
     item {
       Row(verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-          Text("句子翻译", style = MaterialTheme.typography.headlineLarge)
-          Text("先读懂结构，再用准确的中文或英文表达。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+          Text("读懂结构，再表达。", style = MaterialTheme.typography.headlineLarge)
+          Text("先理清主干，再写下你的理解。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         TextButton(onClick = { catalogOpen = true }) { Text("选择句子 · ${bank.size}") }
       }
