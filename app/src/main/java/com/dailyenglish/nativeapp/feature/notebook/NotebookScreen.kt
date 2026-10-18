@@ -60,10 +60,6 @@ fun NotebookScreen(
     modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 18.dp),
     verticalArrangement = Arrangement.spacedBy(14.dp),
   ) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-      Text("值得留下的，再多看一眼。", style = MaterialTheme.typography.headlineLarge)
-      Text("收藏有启发的表达，把容易忘的地方慢慢补上。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
     SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
       listOf("saved" to "我的收藏", "mistakes" to "薄弱 & 错题").forEachIndexed { index, (key, label) ->
         SegmentedButton(
@@ -144,7 +140,7 @@ private fun WordSection(
       }
       if (words.isEmpty()) {
         Text(
-          if (tab == "mistakes") "还没有薄弱词。选择“忘记/模糊”或真题里的错词会来到这里。" else "在词卡或词库点书签，单词就会留在这里。",
+          if (tab == "mistakes") "还没有薄弱词。" else "在词卡或词库点书签，单词会留在这里。",
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           modifier = Modifier.padding(vertical = 10.dp),
@@ -154,9 +150,6 @@ private fun WordSection(
         words.forEachIndexed { index, item ->
           if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
           NotebookWordRow(item, onClick = { onOpenWord(item.word.id) })
-        }
-        if (words.size >= 60) {
-          Text("最多显示 60 词，先练习这一组或缩小搜索范围。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
       }
     }
@@ -209,7 +202,7 @@ private fun SentenceSection(
       }
       if (sentences.isEmpty()) {
         Text(
-          "收藏句子，或在翻译自评里选“还需巩固”，就会留在这里。",
+          "收藏句子，或在翻译自评里选“还需巩固”。",
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           modifier = Modifier.padding(vertical = 10.dp),
@@ -263,8 +256,8 @@ private fun EmptyNotebook(tab: String) {
     Column(Modifier.padding(22.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
       Text(if (tab == "mistakes") "还没有需要补的地方。" else "先留住一点点。", style = MaterialTheme.typography.titleMedium)
       Text(
-        if (tab == "mistakes") "做过词卡、句子或真题后，标记为薄弱或答错的内容会自动出现在这里。"
-        else "在词卡、词库或句子里点书签，收藏的内容会集中在这里，随时回来复习。",
+        if (tab == "mistakes") "标记为薄弱或答错的内容会出现在这里。"
+        else "在词卡、词库或句子里点书签即可。",
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
       )

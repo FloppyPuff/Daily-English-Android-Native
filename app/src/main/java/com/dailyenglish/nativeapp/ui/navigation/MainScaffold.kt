@@ -2,7 +2,6 @@ package com.dailyenglish.nativeapp.ui.navigation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -96,10 +95,7 @@ fun MainNavigation(
       topBar = {
         TopAppBar(
           title = {
-            Column {
-              Text(titleFor(current), style = MaterialTheme.typography.titleLarge)
-              Text("A LITTLE, EVERY DAY", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+            Text(titleFor(current), style = MaterialTheme.typography.titleLarge)
           },
           navigationIcon = {
             if (backStack.size > 1) {

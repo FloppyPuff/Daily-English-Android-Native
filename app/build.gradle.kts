@@ -15,8 +15,8 @@ android {
     applicationId = "com.dailyenglish.native"
     minSdk = 24
     targetSdk = 36
-    versionCode = 4
-    versionName = "1.0.1"
+    versionCode = 5
+    versionName = "1.0.2"
     buildConfigField("String", "API_BASE_URL", "\"https://101.37.23.76:10444/\"")
   }
 

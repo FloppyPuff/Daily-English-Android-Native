@@ -80,10 +80,7 @@ fun SentencesScreen(
   ) {
     item {
       Row(verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-          Text("读懂结构，再表达。", style = MaterialTheme.typography.headlineLarge)
-          Text("先理清主干，再写下你的理解。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
+        Spacer(Modifier.weight(1f))
         TextButton(onClick = { catalogOpen = true }) { Text("选择句子 · ${bank.size}") }
       }
     }
@@ -134,7 +131,6 @@ fun SentencesScreen(
             modifier = Modifier.fillMaxWidth(),
           )
           Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("先自己试一试，再看参考。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.weight(1f))
             Button(onClick = onReveal) {
               Text(if (ui.sentenceRevealed) "收起参考" else "查看参考")
@@ -145,7 +141,7 @@ fun SentencesScreen(
             Text("参考译文", style = MaterialTheme.typography.titleMedium)
             val reference = if (current.direction == "zh2en") current.en else current.zh
             if (reference.isBlank()) {
-              Text("这一题的公开来源只有中文题目，没有收录参考译文。可以对照题目自查。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+              Text("暂无参考译文，可对照题目自查。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
               Text(reference, style = MaterialTheme.typography.bodyLarge)
             }

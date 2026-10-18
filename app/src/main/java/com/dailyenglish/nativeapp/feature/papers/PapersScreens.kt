@@ -81,12 +81,6 @@ fun PapersScreen(
     verticalArrangement = Arrangement.spacedBy(12.dp),
   ) {
     item {
-      Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text("一套一套地练。", style = MaterialTheme.typography.headlineLarge)
-        Text("完形与阅读逐题作答，翻译写完再对照参考译文。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-      }
-    }
-    item {
       SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
         exams.forEachIndexed { index, exam ->
           SegmentedButton(
@@ -126,9 +120,6 @@ fun PapersScreen(
         }
       }
     }
-    item {
-      Text("试卷来自考研英语 1998–2025 年；CET-6 的长难句与翻译在“句子翻译”里练。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
   }
 }
 
@@ -167,7 +158,7 @@ fun PaperSetScreen(
     }
     if (paper.source != null) {
       item {
-        Text("来源：${paper.source}。答案与参考译文来自公开整理版本，措辞可能与个别机构不同。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("来源：${paper.source} · 答案来自公开整理版本", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
       }
     }
   }
@@ -301,16 +292,12 @@ fun PaperGroupScreen(
             if (ui.checked) {
               val score = PaperEngine.gradePaper(ui.answers, group.questions)
               Text("已批改 ${score.correct} / ${score.total} 题", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-              Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedButton(onClick = onReset) { Text("重新作答") }
-                Text("错的题已经留在学习记录里。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.align(Alignment.CenterVertically))
-              }
+              OutlinedButton(onClick = onReset) { Text("重新作答") }
             } else {
               Text("已作答 $answered / ${group.questions.size} 题", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
               Button(onClick = onSubmit, enabled = answered == group.questions.size && !ui.submitting, modifier = Modifier.fillMaxWidth()) {
                 Text(if (ui.submitting) "保存中…" else "提交答案")
               }
-              Text("完形先通读全文，再逐空比较词义与搭配；阅读每题都在原文里找依据。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
           }
         }
@@ -396,7 +383,7 @@ private fun TranslationQuestion(
         value = answer,
         onValueChange = onAnswer,
         label = { Text(if (question.stem != null) "你的译文" else "全文译文") },
-        placeholder = { Text(if (question.stem != null) "先理清主干，再补修饰…" else "先理清层次，再逐句写通顺…") },
+        placeholder = { Text("输入译文") },
         minLines = 4,
         maxLines = 8,
         modifier = Modifier.fillMaxWidth(),
@@ -425,10 +412,8 @@ private fun TranslationFooter(
   ) {
     Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
       if (!checked) {
-        Text("先自己译完，再打开参考。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Button(onClick = onCheck, modifier = Modifier.fillMaxWidth()) { Text("对照参考译文") }
       } else {
-        Text("参考译文并非唯一答案，译得通顺就算过。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
           OutlinedButton(onClick = { onRate("review") }, enabled = !submitting, modifier = Modifier.weight(1f)) { Text("还需巩固") }
           Button(onClick = { onRate("mastered") }, enabled = !submitting, modifier = Modifier.weight(1f)) { Text("已经理解") }

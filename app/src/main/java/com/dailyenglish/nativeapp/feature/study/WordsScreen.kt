@@ -115,7 +115,6 @@ fun WordsScreen(
         ) {
           Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("这一组学完了。", style = MaterialTheme.typography.headlineMedium)
-            Text("可以换一组继续，或者去复习已经学过的词。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Button(onClick = onNewSession) { Text("换一组") }
           }
         }
@@ -178,9 +177,7 @@ private fun WordCard(
   ) {
     Column(Modifier.padding(22.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
       Row(verticalAlignment = Alignment.CenterVertically) {
-        Text("DAILY WORDS", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         if (tier.isNotBlank()) {
-          Spacer(Modifier.width(10.dp))
           Surface(shape = CircleShape, color = MaterialTheme.colorScheme.secondaryContainer) {
             Text(tier, style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp))
           }
@@ -225,9 +222,7 @@ private fun WordCard(
           Spacer(Modifier.height(8.dp))
           if (spelling) {
             Text(word.meaning, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
-            Text("根据释义写出这个单词。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
           } else {
-            Text("先回忆，再揭晓。让记忆多走一步。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Button(onClick = onReveal, modifier = Modifier.fillMaxWidth()) { Text("显示释义") }
           }
         } else {

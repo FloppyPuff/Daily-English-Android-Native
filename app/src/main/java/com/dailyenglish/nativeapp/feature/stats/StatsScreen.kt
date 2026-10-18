@@ -63,16 +63,7 @@ fun StatsScreen(
     modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 18.dp),
     verticalArrangement = Arrangement.spacedBy(14.dp),
   ) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-      Text("每一点进步，都有迹可循。", style = MaterialTheme.typography.headlineLarge)
-      Text("这里不预填成绩，只记录你真实完成的学习。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
     ExamSwitch(ui.exam, viewModel::setExam)
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-      Text("连续学习", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-      Text("${stats.streak} 天", style = MaterialTheme.typography.titleMedium)
-      Text("· 两个方向合计 ${stats.activeDays} 天", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
     StatGrid(stats)
     BoxWithConstraints {
       val twoPane = maxWidth >= 720.dp
@@ -89,11 +80,6 @@ fun StatsScreen(
       }
     }
     HeatmapPanel(stats.heatmap)
-    Text(
-      "汇总口径：当前考试方向；同一天重复练习的单词只计算一次；专注事件达到 60 秒才计入活跃日。",
-      style = MaterialTheme.typography.bodySmall,
-      color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
   }
 }
 
@@ -175,7 +161,6 @@ private fun WeekPanel(week: List<WeekSlice>, modifier: Modifier) {
           }
         }
       }
-      Text("同一天重复练习的单词只计算一次。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
   }
 }
@@ -190,8 +175,7 @@ private fun MasteryPanel(stats: Statistics, modifier: Modifier) {
   ) {
     Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
       Row(verticalAlignment = Alignment.CenterVertically) {
-        Text("词汇掌握情况", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-        Text("已开启学习的比例", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("词汇掌握情况", style = MaterialTheme.typography.titleMedium)
       }
       Row(verticalAlignment = Alignment.Bottom) {
         Text("$percent", style = MaterialTheme.typography.displaySmall.copy(fontFamily = FontFamily.Monospace))
@@ -227,8 +211,8 @@ private fun HeatmapPanel(heatmap: List<HeatCell>) {
   ) {
     Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
       Row(verticalAlignment = Alignment.CenterVertically) {
-        Text("把日常，连成一片。", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-        Text("最近 12 周", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("学习热力图", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+        Text("近 12 周", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
       }
       val firstOffset = heatmap.firstOrNull()?.let { mondayIndex(it.day) } ?: 0
       val padded = List<HeatCell?>(firstOffset) { null } + heatmap
@@ -270,8 +254,6 @@ private fun HeatmapPanel(heatmap: List<HeatCell>) {
           Box(Modifier.size(12.dp).clip(RoundedCornerShape(2.dp)).background(heatColor(level)))
         }
         Text("多", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Spacer(Modifier.weight(1f))
-        Text("每一格，是一天留下的学习痕迹。", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
       }
     }
   }

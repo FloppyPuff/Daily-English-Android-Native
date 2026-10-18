@@ -39,13 +39,12 @@ fun FocusSheet(
       verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
       Icon(Icons.Outlined.Timer, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(34.dp))
-      Text("给学习一段完整的时间。", style = MaterialTheme.typography.titleLarge)
+      Text("专注计时", style = MaterialTheme.typography.titleLarge)
       Text(
         formatClock(ui.focus.remainingSeconds),
         style = NumberStyle.copy(fontSize = MaterialTheme.typography.displayLarge.fontSize),
         color = MaterialTheme.colorScheme.onSurface,
       )
-      Text("专注用时按实际经过的时间记录，暂停不计时。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
       Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
         Button(
           onClick = if (ui.focus.running) onPause else onStart,
@@ -54,7 +53,7 @@ fun FocusSheet(
         OutlinedButton(onClick = onReset, modifier = Modifier.weight(1f)) { Text("重新计时") }
       }
       Spacer(Modifier.height(4.dp))
-      Text("关闭应用会结束本次计时，与网页版一致。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+      Text("关闭应用会结束本次计时。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
   }
 }

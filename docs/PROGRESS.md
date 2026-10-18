@@ -1,16 +1,16 @@
 # Native Android 进度存档
 
-更新时间：2026-10-18 21:45（CST）  
-状态：**M1、M2、M3 完成并已真机验证；1.0.1 已交付。**
+更新时间：2026-10-18 21:58（CST）
+状态：**M1、M2、M3 完成并已真机验证；1.0.2 已交付。**
 
 ## 仓库与交付
 
 - 工程：`native-android/`（独立 git 仓库，当前分支 `main`）
-- 标签：`v1.0.1`
+- 标签：`v1.0.2`
 - APK：`app/build/outputs/apk/debug/app-debug.apk`
-- 桌面副本：`C:\Users\fjh28\Desktop\Daily-English-Native-1.0.1-debug.apk`
-- SHA-256：`7045b9b4ce56f3fa7f9cc8b5552d1dfd3e2902900ab113d1e26e1ee2be2eff5c`
-- 设备：PMW110 / Android 17（API 37）；APK 1.0.1 已安装。
+- 桌面副本：`C:\Users\fjh28\Desktop\Daily-English-Native-1.0.2-debug.apk`
+- SHA-256：`21e63b3377e2a33cccde4edc791c34cb2d40407cd0af8ac75674ccb4cf37f6e1`
+- 设备：PMW110 / Android 17（API 37）；APK 1.0.2 已安装。
 
 ## 已完成（M1）
 
@@ -37,6 +37,7 @@
 - 修改密码：表单校验 + `/api/password`，成功后提示其他设备重新登录。
 - 自适应：`>=600dp` NavigationRail（短屏图标模式）；笔记/记录 `>=720dp` 双栏。
 - 动态取色：Android 12+ 跟随壁纸，默认关闭；偏好仅存本机 DataStore。
+- UI 精简（1.0.2）：移除各页重复大标题/副标题、顶栏品牌口号与说明性长文，保留操作、状态与风险提示。
 
 ## 验证证据
 
@@ -48,6 +49,7 @@
   记录在返回、冷启动与覆盖安装后保留。
 - M3 真机：笔记收藏与进入练习；统计页真实数据与横向热力图；备份导出 5,100 B 并通过网页
   `parseBackup`；密码表单校验；横屏 NavigationRail；深浅色与动态取色切换。
+- UI 精简后真机复查：今日、练习、记录、笔记、设置、句子、真题目录与分组页布局正常。
 - 真实账号登录与跨端同步已由用户验证。
 - 修复：Manifest 缺少 `TTS_SERVICE` 查询导致系统 TTS 引擎不可见，已加入 `<queries>`。
 

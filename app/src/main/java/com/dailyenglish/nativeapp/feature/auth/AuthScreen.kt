@@ -33,7 +33,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -65,7 +64,6 @@ fun AuthScreen(
       }
       Column {
         Text("Daily English.", style = MaterialTheme.typography.headlineMedium)
-        Text("一点积累，每日发生", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
       }
     }
 
@@ -75,13 +73,7 @@ fun AuthScreen(
       modifier = Modifier.fillMaxWidth(),
     ) {
       Column(Modifier.padding(22.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("A QUIET PLACE TO BEGIN", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-        Text("从今天开始，把英语变成日常。", style = MaterialTheme.typography.headlineMedium)
-        Text(
-          "创建账号后，这台设备上已有的进度会自动上传；之后换设备，也能接着学。",
-          style = MaterialTheme.typography.bodyMedium,
-          color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Text("登录或注册", style = MaterialTheme.typography.titleLarge)
 
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
           SegmentedButton(
@@ -109,7 +101,11 @@ fun AuthScreen(
           value = state.password,
           onValueChange = onPassword,
           label = { Text("密码") },
-          supportingText = { Text("至少 8 位，含字母与数字") },
+          supportingText = if (state.mode == AuthMode.REGISTER) {
+            { Text("至少 8 位，含字母与数字") }
+          } else {
+            null
+          },
           singleLine = true,
           visualTransformation = PasswordVisualTransformation(),
           enabled = !state.busy,
@@ -130,12 +126,5 @@ fun AuthScreen(
         }
       }
     }
-    Text(
-      "每天一点，不急着抵达。",
-      style = MaterialTheme.typography.titleMedium,
-      color = MaterialTheme.colorScheme.onSurfaceVariant,
-      textAlign = TextAlign.Center,
-      modifier = Modifier.fillMaxWidth(),
-    )
   }
 }

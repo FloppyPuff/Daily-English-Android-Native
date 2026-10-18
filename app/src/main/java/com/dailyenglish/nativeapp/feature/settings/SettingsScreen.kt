@@ -124,12 +124,6 @@ fun SettingsScreen(
     contentPadding = PaddingValues(horizontal = 20.dp, vertical = 18.dp),
     verticalArrangement = Arrangement.spacedBy(16.dp),
   ) {
-    item {
-      Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text("按你的节奏学习。", style = MaterialTheme.typography.headlineLarge)
-        Text("目标、账号和专注时长都在这里。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-      }
-    }
     item { ExamSwitch(exam, { exam = it }) }
     item {
       Card(
@@ -238,7 +232,7 @@ fun SettingsScreen(
               ) { Text(if (state.passwordBusy) "修改中…" else "修改密码") }
             }
             is AuthState.Anonymous -> {
-              Text("注册后，学习进度保存在你自己的账号里，换设备也能接着学。不登录也可以继续，进度只留在这台设备。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+              Text("登录后可跨设备同步；不登录则仅保存在本机。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
               Button(onClick = onLoginRequested) { Text("登录或注册") }
             }
           }
@@ -255,8 +249,8 @@ fun SettingsScreen(
           Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             Text("跟随壁纸取色", style = MaterialTheme.typography.titleMedium)
             Text(
-              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) "使用系统的 Material You 配色；关闭时保留品牌绿色。"
-              else "Android 12 及以上可用；当前系统保留品牌绿色。",
+              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) "使用系统 Material You 配色"
+              else "Android 12 及以上可用",
               style = MaterialTheme.typography.bodySmall,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -276,9 +270,9 @@ fun SettingsScreen(
         modifier = Modifier.fillMaxWidth(),
       ) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-          Text("进度，留在自己手里。", style = MaterialTheme.typography.titleMedium)
+          Text("备份与恢复", style = MaterialTheme.typography.titleMedium)
           Text(
-            "备份是完整的学习状态 JSON，可以恢复到当前版本，也可以被网页版导入。导入会替换这台设备上的进度，操作前会再次确认。",
+            "导出完整学习状态；导入会覆盖本机进度。",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
           )
@@ -302,8 +296,7 @@ fun SettingsScreen(
           if (state.importing) {
             LinearProgressIndicator(Modifier.fillMaxWidth())
           }
-          Text("备份上限 5 MB；导入失败不会改动现有数据。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-          Text("学习进度保存在本机 SQLite；登录后使用与网页版一致的 revision 合并协议。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+          Text("上限 5 MB · 导入失败不覆盖", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
       }
     }

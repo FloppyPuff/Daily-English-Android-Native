@@ -9,7 +9,7 @@ Daily English 的原生 Android 版：Kotlin + Jetpack Compose + Material 3。
 - Kotlin namespace / package：`com.dailyenglish.nativeapp`
   （`native` 是 Java 关键字，不能作为包名；applicationId 不受此限制）
 - 桌面名：`Daily English Native`
-- 版本：`1.0.1`（versionCode 4）
+- 版本：`1.0.2`（versionCode 5）
 
 ## M1 已实现
 
@@ -77,8 +77,8 @@ cd native-android
 APK：`app/build/outputs/apk/debug/app-debug.apk`。
 
 当前交付（2026-10-18）：桌面副本
-`C:\Users\fjh28\Desktop\Daily-English-Native-1.0.1-debug.apk`，
-SHA-256 `7045b9b4ce56f3fa7f9cc8b5552d1dfd3e2902900ab113d1e26e1ee2be2eff5c`。
+`C:\Users\fjh28\Desktop\Daily-English-Native-1.0.2-debug.apk`，
+SHA-256 `21e63b3377e2a33cccde4edc791c34cb2d40407cd0af8ac75674ccb4cf37f6e1`。
 重新构建后校验和会变化。
 
 ## 测试
@@ -137,6 +137,7 @@ MockWebServer 登录/401/409、Keystore 会话加密、WorkManager 初始化。
 - 深色模式：认证页与统计页使用深色品牌色板，切回浅色正常。
 - 动态取色：Android 12+ 开关即时切换 Material You 配色，关闭恢复品牌绿；偏好存本机。
 - 用户已用真实账号完成登录与跨端同步验证。
+- UI 文案精简：移除各页重复的大标题/副标题、顶栏品牌口号和泛化提示，保留操作、状态与风险说明。
 - JVM 49/49、设备 7/7 通过。
 
 ## 已知边界

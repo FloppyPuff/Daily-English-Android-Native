@@ -97,13 +97,7 @@ fun TodayScreen(
     verticalArrangement = Arrangement.spacedBy(18.dp),
   ) {
     item {
-      Row(verticalAlignment = Alignment.Bottom) {
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-          Text(day, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
-          Text("把英语，变成日常。", style = MaterialTheme.typography.displaySmall)
-          Text("沿着今天的计划，一次只专注一件事。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-      }
+      Text(day, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
     }
     item { ExamSwitch(ui.progress.settings.exam, onExam) }
     item {
@@ -132,7 +126,6 @@ fun TodayScreen(
           }
           if (plan.active == "done") {
             Text("今天的计划完成了。", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
-            Text("这份积累已经留下，安心休息一下。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
           } else {
             Button(
               onClick = {
@@ -233,17 +226,10 @@ fun PracticeScreen(
     return
   }
   val stats = ui.stats
-  val plan = ui.plan
   LazyColumn(
     contentPadding = PaddingValues(horizontal = 20.dp, vertical = 18.dp),
     verticalArrangement = Arrangement.spacedBy(14.dp),
   ) {
-    item {
-      Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text("想练哪一项？", style = MaterialTheme.typography.headlineLarge)
-        Text("想多学一点，或专门巩固某一项，都从这里开始。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-      }
-    }
     item { ExamSwitch(ui.progress.settings.exam, onExam) }
     item {
       PracticeCard(
@@ -256,7 +242,7 @@ fun PracticeScreen(
     item {
       PracticeCard(
         title = "句子翻译",
-        caption = "253 句真题长难句与翻译段落",
+        caption = "253 句长难句与段落",
         icon = Icons.Outlined.Translate,
         onClick = onSentences,
       )
@@ -270,16 +256,7 @@ fun PracticeScreen(
       )
     }
     item {
-      PracticeCard("真题练习", "44 套考研真题，逐组练习", Icons.Outlined.School, onPapers)
-    }
-    if (plan != null && plan.active != "done") {
-      item {
-        Text(
-          "今日还有 ${plan.steps.sumOf { it.pending }} 项待完成。",
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-      }
+      PracticeCard("真题练习", "44 套 · 逐组练习", Icons.Outlined.School, onPapers)
     }
   }
 }
@@ -320,13 +297,12 @@ fun ReviewScreen(ui: StudyUiState, onStart: () -> Unit) {
     contentPadding = PaddingValues(horizontal = 20.dp, vertical = 18.dp),
     verticalArrangement = Arrangement.spacedBy(14.dp),
   ) {
-    item {
-      Row(verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f)) {
-          Text("复习计划", style = MaterialTheme.typography.headlineLarge)
-          Text("复习时间根据每次自评调整，不用自己排计划。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    if (due.isNotEmpty()) {
+      item {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+          Text("${due.size} 词到期", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+          Button(onClick = onStart) { Text("开始复习") }
         }
-        if (due.isNotEmpty()) Button(onClick = onStart) { Text("开始复习") }
       }
     }
     if (due.isEmpty()) {
@@ -338,7 +314,7 @@ fun ReviewScreen(ui: StudyUiState, onStart: () -> Unit) {
         ) {
           Column(Modifier.padding(22.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("暂时没有到期单词", style = MaterialTheme.typography.titleMedium)
-            Text("新学词会自动排入复习计划，到时间再回来就好。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("新词会在到期后自动出现。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
           }
         }
       }
@@ -363,11 +339,8 @@ fun ReviewScreen(ui: StudyUiState, onStart: () -> Unit) {
         }
       }
       if (due.size > 30) {
-        item { Text("这里显示前 30 词；开始复习会按到期顺序安排全部 ${due.size} 词。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        item { Text("显示前 30 词", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
       }
-    }
-    item {
-      Text("复习间隔：忘记 10 分钟后 · 模糊 1 天后 · 记住至少 3 天后 · 熟悉至少 7 天后。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
   }
 }
