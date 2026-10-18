@@ -9,7 +9,7 @@ Daily English 的原生 Android 版：Kotlin + Jetpack Compose + Material 3。
 - Kotlin namespace / package：`com.dailyenglish.nativeapp`
   （`native` 是 Java 关键字，不能作为包名；applicationId 不受此限制）
 - 桌面名：`Daily English Native`
-- 版本：`1.0.0`（versionCode 3）
+- 版本：`1.0.1`（versionCode 4）
 
 ## M1 已实现
 
@@ -36,7 +36,7 @@ Daily English 的原生 Android 版：Kotlin + Jetpack Compose + Material 3。
 ## M3 已实现
 
 - 笔记：收藏词/句、薄弱 & 错题（含真题错词）、搜索、进入单条练习、宽屏双栏。
-- 记录：累计已学/较熟悉/学习天数/专注分钟/真题、7 日词汇节奏、掌握比例、12 周热力图。
+- 记录：累计已学/较熟悉/学习天数/专注分钟/真题、7 日词汇节奏、掌握比例、12 周横向热力图（周一至周日，按周排列）。
 - 备份导出/恢复：完整 version 3 JSON、5 MB 上限、导入前二次确认、导入失败不改动现有数据。
 - 修改密码：当前/新密码校验、服务器接口、其他设备会话失效提示。
 - 自适应：`>=600dp` 使用 NavigationRail，记录/笔记在宽屏使用双栏。
@@ -77,8 +77,8 @@ cd native-android
 APK：`app/build/outputs/apk/debug/app-debug.apk`。
 
 当前交付（2026-10-18）：桌面副本
-`C:\Users\fjh28\Desktop\Daily-English-Native-1.0.0-debug.apk`，
-SHA-256 `c021d280f023be2e9a07aa5fe74102c5bd0e76833333841405f110cb23461e12`。
+`C:\Users\fjh28\Desktop\Daily-English-Native-1.0.1-debug.apk`，
+SHA-256 `7045b9b4ce56f3fa7f9cc8b5552d1dfd3e2902900ab113d1e26e1ee2be2eff5c`。
 重新构建后校验和会变化。
 
 ## 测试
@@ -129,7 +129,7 @@ MockWebServer 登录/401/409、Keystore 会话加密、WorkManager 初始化。
 ### M3（2026-10-18）
 
 - 笔记：收藏 1 个单词后出现在“我的收藏”；薄弱/错题空态与规则正常；点击单词进入单词练习。
-- 记录：累计已学 11 词、7 日柱状图、掌握比例、12 周热力图和专注/真题卡片均渲染真实数据。
+- 记录：累计已学 11 词、7 日柱状图、掌握比例、横向 12 周热力图和专注/真题卡片均渲染真实数据。
 - 备份：导出 `daily-english-2026-10-18.json`（5,100 B）；该文件通过网页版 `parseBackup` 校验，
   记录数/事件数与原生一致。恢复逻辑有编解码单测与 Room 导入设备测试。
 - 修改密码：表单校验（空当前密码、弱新密码）与错误提示正常；未实际改动真实账号密码。

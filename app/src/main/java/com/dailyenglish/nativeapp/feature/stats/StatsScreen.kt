@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dailyenglish.nativeapp.core.learning.HeatCell
@@ -40,6 +41,7 @@ import com.dailyenglish.nativeapp.feature.study.ExamSwitch
 import com.dailyenglish.nativeapp.feature.study.StudyError
 import com.dailyenglish.nativeapp.feature.study.StudyLoading
 import com.dailyenglish.nativeapp.theme.NumberStyle
+import java.util.Calendar
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -228,11 +230,36 @@ private fun HeatmapPanel(heatmap: List<HeatCell>) {
         Text("把日常，连成一片。", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
         Text("最近 12 周", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
       }
-      Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-        heatmap.chunked(7).forEach { week ->
-          Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-            week.forEach { cell ->
-              Box(Modifier.size(17.dp).clip(RoundedCornerShape(3.dp)).background(heatColor(cell.level)))
+      val firstOffset = heatmap.firstOrNull()?.let { mondayIndex(it.day) } ?: 0
+      val padded = List<HeatCell?>(firstOffset) { null } + heatmap
+      val weeks = padded.chunked(7).map { week -> week + List(7 - week.size) { null } }
+      Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+          listOf("一", "", "三", "", "五", "", "日").forEach { label ->
+            Box(Modifier.size(15.dp), contentAlignment = Alignment.CenterStart) {
+              Text(
+                label,
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+              )
+            }
+          }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+          weeks.forEach { week ->
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+              week.forEach { cell ->
+                if (cell == null) {
+                  Box(Modifier.size(15.dp))
+                } else {
+                  Box(
+                    Modifier
+                      .size(15.dp)
+                      .clip(RoundedCornerShape(3.dp))
+                      .background(heatColor(cell.level)),
+                  )
+                }
+              }
             }
           }
         }
@@ -256,4 +283,14 @@ private fun heatColor(level: Int): Color = when (level) {
   2 -> MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
   1 -> MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
   else -> MaterialTheme.colorScheme.surfaceVariant
+}
+
+private fun mondayIndex(day: String): Int {
+  val parts = day.split("-")
+  if (parts.size != 3) return 0
+  val calendar = Calendar.getInstance()
+  return runCatching {
+    calendar.set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
+    (calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7
+  }.getOrDefault(0)
 }
