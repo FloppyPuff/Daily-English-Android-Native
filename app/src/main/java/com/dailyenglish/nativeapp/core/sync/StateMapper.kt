@@ -27,8 +27,8 @@ class StateMapper @Inject constructor(
   private val database: DailyEnglishDatabase,
   private val dao: ProgressDao,
   private val json: Json,
-) {
-  suspend fun snapshot(): AppState = database.withTransaction {
+) : StateStore {
+  override suspend fun snapshot(): AppState = database.withTransaction {
     AppState(
       version = 3,
       settings = dao.settings()?.toModel() ?: Settings(),
@@ -42,7 +42,7 @@ class StateMapper @Inject constructor(
     )
   }
 
-  suspend fun replaceAll(state: AppState) {
+  override suspend fun replaceAll(state: AppState) {
     val normalized = normalizeLegacy(state)
     database.withTransaction {
       clearAll()

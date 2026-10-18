@@ -12,6 +12,7 @@ sealed interface ApiResult<out T> {
     val status: Int,
     val message: String,
     val payload: AppState? = null,
+    val revision: Long? = null,
   ) : ApiResult<Nothing>
 }
 
@@ -19,18 +20,18 @@ sealed interface ApiResult<out T> {
 class RemoteDataSource @Inject constructor(
   private val api: ApiService,
   private val json: Json,
-) {
+) : SyncApi {
   suspend fun register(email: String, password: String): ApiResult<AuthResponse> =
     call { api.register(AuthRequest(email, password)) }
 
   suspend fun login(email: String, password: String): ApiResult<AuthResponse> =
     call { api.login(AuthRequest(email, password)) }
 
-  suspend fun me(): ApiResult<UserResponse> = call { api.me() }
+  override suspend fun me(): ApiResult<UserResponse> = call { api.me() }
 
-  suspend fun getState(): ApiResult<StateResponse> = call { api.getState() }
+  override suspend fun getState(): ApiResult<StateResponse> = call { api.getState() }
 
-  suspend fun putState(revision: Long, payload: AppState): ApiResult<RevisionResponse> =
+  override suspend fun putState(revision: Long, payload: AppState): ApiResult<RevisionResponse> =
     call { api.putState(PutStateRequest(revision, payload)) }
 
   suspend fun changePassword(current: String, next: String): ApiResult<UserResponse> =
@@ -51,12 +52,12 @@ class RemoteDataSource @Inject constructor(
         val error = runCatching { json.decodeFromString<ErrorResponse>(text) }.getOrNull()?.error
           ?.takeIf { it.isNotBlank() }
           ?: "请求失败（${response.code()}）"
-        val payload = if (response.code() == 409 && text.isNotBlank()) {
-          runCatching { json.decodeFromString<StateResponse>(text).payload }.getOrNull()
+        val conflict = if (response.code() == 409 && text.isNotBlank()) {
+          runCatching { json.decodeFromString<StateResponse>(text) }.getOrNull()
         } else {
           null
         }
-        ApiResult.Failure(response.code(), error, payload)
+        ApiResult.Failure(response.code(), error, conflict?.payload, conflict?.revision)
       }
     } catch (error: Exception) {
       ApiResult.Failure(0, "无法连接服务器，请检查网络后重试")

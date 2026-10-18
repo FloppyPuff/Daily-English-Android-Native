@@ -11,11 +11,15 @@ import com.dailyenglish.nativeapp.data.local.ProgressDao
 import com.dailyenglish.nativeapp.data.local.SavedSentenceEntity
 import com.dailyenglish.nativeapp.data.local.SavedWordEntity
 import com.dailyenglish.nativeapp.data.local.toEntity
+import com.dailyenglish.nativeapp.di.ApplicationScope
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -24,12 +28,24 @@ class ProgressRepository @Inject constructor(
   private val dao: ProgressDao,
   private val mapper: StateMapper,
   private val syncTrigger: SyncTrigger,
+  @ApplicationScope private val scope: CoroutineScope,
 ) {
   private val mutex = Mutex()
   private val _state = MutableStateFlow(createState())
   private val _loaded = MutableStateFlow(false)
   val state: StateFlow<AppState> = _state.asStateFlow()
   val loaded: StateFlow<Boolean> = _loaded.asStateFlow()
+
+  init {
+    scope.launch {
+      syncTrigger.remoteState.filterNotNull().collect { remote ->
+        mutex.withLock {
+          _state.value = remote
+          _loaded.value = true
+        }
+      }
+    }
+  }
 
   suspend fun load() {
     mutex.withLock {

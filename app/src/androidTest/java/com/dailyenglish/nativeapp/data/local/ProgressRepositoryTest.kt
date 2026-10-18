@@ -7,7 +7,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.dailyenglish.nativeapp.core.model.createState
 import com.dailyenglish.nativeapp.core.sync.StateMapper
 import com.dailyenglish.nativeapp.data.repository.ProgressRepository
+import com.dailyenglish.nativeapp.core.model.AppState
 import com.dailyenglish.nativeapp.data.repository.SyncTrigger
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.junit.After
@@ -26,6 +31,7 @@ class ProgressRepositoryTest {
 
   private class FakeTrigger : SyncTrigger {
     var count = 0
+    override val remoteState: StateFlow<AppState?> = MutableStateFlow(null)
     override fun markDirty() { count++ }
   }
 
@@ -45,7 +51,7 @@ class ProgressRepositoryTest {
 
   @Test
   fun progressSurvivesRepositoryReloadAndMarksDirty() = runBlocking {
-    val repository = ProgressRepository(dao, mapper, trigger)
+    val repository = ProgressRepository(dao, mapper, trigger, CoroutineScope(Dispatchers.Unconfined))
     repository.load()
     repository.rateWord("abandon", "good")
 
@@ -53,7 +59,7 @@ class ProgressRepositoryTest {
     assertEquals(1, dao.eventCount())
     assertEquals(1, repository.state.value.records.size)
 
-    val reloaded = ProgressRepository(dao, mapper, trigger)
+    val reloaded = ProgressRepository(dao, mapper, trigger, CoroutineScope(Dispatchers.Unconfined))
     reloaded.load()
     assertEquals(1, reloaded.state.value.records.size)
     assertEquals(3, reloaded.state.value.records.getValue("abandon").interval)
@@ -61,7 +67,7 @@ class ProgressRepositoryTest {
 
   @Test
   fun savedItemsSettingsAndFocusPersist() = runBlocking {
-    val repository = ProgressRepository(dao, mapper, trigger)
+    val repository = ProgressRepository(dao, mapper, trigger, CoroutineScope(Dispatchers.Unconfined))
     repository.load()
     repository.toggleSavedWord("abandon")
     repository.toggleSavedSentence("s001")
@@ -79,7 +85,7 @@ class ProgressRepositoryTest {
 
   @Test
   fun remoteReplaceClearsStaleRows() = runBlocking {
-    val repository = ProgressRepository(dao, mapper, trigger)
+    val repository = ProgressRepository(dao, mapper, trigger, CoroutineScope(Dispatchers.Unconfined))
     repository.load()
     repository.rateWord("abandon", "good")
     repository.toggleSavedWord("abandon")

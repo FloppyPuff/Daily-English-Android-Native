@@ -1,13 +1,9 @@
 package com.dailyenglish.nativeapp.data.repository
 
-import javax.inject.Inject
-import javax.inject.Singleton
+import com.dailyenglish.nativeapp.core.model.AppState
+import kotlinx.coroutines.flow.StateFlow
 
 interface SyncTrigger {
   fun markDirty()
-}
-
-@Singleton
-class NoopSyncTrigger @Inject constructor() : SyncTrigger {
-  override fun markDirty() = Unit
+  val remoteState: StateFlow<AppState?>
 }

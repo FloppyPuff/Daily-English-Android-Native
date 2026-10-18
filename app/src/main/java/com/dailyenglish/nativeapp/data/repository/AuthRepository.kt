@@ -15,15 +15,20 @@ sealed interface AuthState {
   data class Member(val email: String, val offline: Boolean = false) : AuthState
 }
 
+interface SessionStateProvider {
+  val state: StateFlow<AuthState>
+  suspend fun markSignedOut()
+}
+
 class AuthException(message: String, val status: Int = 0) : Exception(message)
 
 @Singleton
 class AuthRepository @Inject constructor(
   private val remote: RemoteDataSource,
   private val session: SessionStore,
-) {
+) : SessionStateProvider {
   private val _state = MutableStateFlow<AuthState>(AuthState.Anonymous(guest = false))
-  val state: StateFlow<AuthState> = _state.asStateFlow()
+  override val state: StateFlow<AuthState> = _state.asStateFlow()
 
   suspend fun bootstrap() {
     val token = session.token()
@@ -56,6 +61,11 @@ class AuthRepository @Inject constructor(
     session.clearAuth()
     session.setGuestMode(true)
     _state.value = AuthState.Anonymous(guest = true)
+  }
+
+  override suspend fun markSignedOut() {
+    session.clearAuth()
+    _state.value = AuthState.Anonymous(session.guestMode())
   }
 
   suspend fun continueAsGuest() {
