@@ -29,3 +29,12 @@ data class Words(
   val mode: String = "new",
   val wordId: String? = null,
 ) : NavKey
+
+@Serializable
+data object Papers : NavKey
+
+@Serializable
+data class PaperSet(val id: String) : NavKey
+
+@Serializable
+data class PaperGroup(val setId: String, val index: String) : NavKey

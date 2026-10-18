@@ -1,11 +1,13 @@
 package com.dailyenglish.nativeapp.data.repository
 
 import com.dailyenglish.nativeapp.core.learning.LearningEngine
+import com.dailyenglish.nativeapp.core.learning.PaperEngine
 import com.dailyenglish.nativeapp.core.model.AppState
 import com.dailyenglish.nativeapp.core.model.StudyEvent
 import com.dailyenglish.nativeapp.core.model.createState
 import com.dailyenglish.nativeapp.core.sync.StateMapper
 import com.dailyenglish.nativeapp.core.sync.normalizeLegacy
+import com.dailyenglish.nativeapp.data.content.PaperQuestionDto
 import com.dailyenglish.nativeapp.data.local.DraftEntity
 import com.dailyenglish.nativeapp.data.local.ProgressDao
 import com.dailyenglish.nativeapp.data.local.SavedSentenceEntity
@@ -66,6 +68,19 @@ class ProgressRepository @Inject constructor(
     val next = LearningEngine.recordSentence(current, id, answer, rating)
     dao.upsertSentence(next.sentenceRecords.getValue(id).toEntity(id))
     dao.upsertDraft(DraftEntity(id, next.drafts.getValue(id)))
+    dao.insertEvent(next.events.last().toEntity())
+    next
+  }
+
+  suspend fun recordPaper(
+    key: String,
+    answers: Map<String, String>,
+    questions: List<PaperQuestionDto>,
+    words: List<String>,
+    rating: String = "",
+  ) = mutate { current ->
+    val next = PaperEngine.recordPaper(current, key, answers, questions, words, rating)
+    mapper.savePaper(key, next.papers.getValue(key))
     dao.insertEvent(next.events.last().toEntity())
     next
   }

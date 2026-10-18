@@ -29,6 +29,7 @@ class ContentRepository @Inject constructor(
 ) {
   private val mutex = Mutex()
   private var cached: Content? = null
+  private val papers = java.util.concurrent.ConcurrentHashMap<String, PaperDto>()
 
   suspend fun load(): Content {
     cached?.let { return it }
@@ -49,8 +50,20 @@ class ContentRepository @Inject constructor(
     }
   }
 
+  suspend fun paper(id: String): PaperDto? {
+    if (!PAPER_SET_ID.matches(id)) return null
+    papers[id]?.let { return it }
+    return withContext(Dispatchers.IO) {
+      runCatching { read<PaperDto>("papers/$id.json") }.getOrNull()?.also { papers[id] = it }
+    }
+  }
+
   private inline fun <reified T> read(name: String): T {
     val text = context.assets.open("content/$name").bufferedReader().use { it.readText() }
     return json.decodeFromString(text)
+  }
+
+  companion object {
+    private val PAPER_SET_ID = Regex("""^\d{4}-[12]$""")
   }
 }

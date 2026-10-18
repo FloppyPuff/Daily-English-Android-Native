@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.dailyenglish.nativeapp.core.model.createState
+import com.dailyenglish.nativeapp.data.content.PaperQuestionDto
 import com.dailyenglish.nativeapp.core.sync.StateMapper
 import com.dailyenglish.nativeapp.data.repository.ProgressRepository
 import com.dailyenglish.nativeapp.core.model.AppState
@@ -95,5 +96,25 @@ class ProgressRepositoryTest {
     assertEquals(0, dao.eventCount())
     assertTrue(repository.state.value.records.isEmpty())
     assertTrue(repository.state.value.savedWords.isEmpty())
+  }
+
+  @Test
+  fun paperRecordSurvivesReload() = runBlocking {
+    val repository = ProgressRepository(dao, mapper, trigger, CoroutineScope(Dispatchers.Unconfined))
+    repository.load()
+    val questions = listOf(
+      PaperQuestionDto(1, mapOf("A" to "one", "B" to "two"), "A"),
+      PaperQuestionDto(2, mapOf("A" to "one", "B" to "two"), "B"),
+    )
+    repository.recordPaper("2025-2#0-0", mapOf("1" to "A", "2" to "A"), questions, listOf("abandon"))
+
+    val record = repository.state.value.papers.getValue("2025-2#0-0")
+    assertEquals(1, record.correct)
+    assertEquals(2, record.total)
+    assertEquals(listOf(2), record.wrong)
+
+    val reloaded = ProgressRepository(dao, mapper, trigger, CoroutineScope(Dispatchers.Unconfined))
+    reloaded.load()
+    assertEquals(1, reloaded.state.value.papers.getValue("2025-2#0-0").correct)
   }
 }

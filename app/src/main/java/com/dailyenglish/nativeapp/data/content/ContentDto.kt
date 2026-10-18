@@ -111,3 +111,38 @@ data class PaperIndexDto(
   val questions: Int = 0,
   val counts: Map<String, Int> = emptyMap(),
 )
+
+@Serializable
+data class PaperDto(
+  val id: String,
+  val year: Int = 0,
+  val exam: String = "",
+  val source: String? = null,
+  val sections: List<PaperSectionDto> = emptyList(),
+  val counts: Map<String, Int> = emptyMap(),
+)
+
+@Serializable
+data class PaperSectionDto(
+  val title: String = "",
+  val instructions: String = "",
+  val score: Int = 0,
+  val groups: List<PaperGroupDto> = emptyList(),
+)
+
+@Serializable
+data class PaperGroupDto(
+  val type: String = "",
+  val title: String? = null,
+  val passage: List<String> = emptyList(),
+  val questions: List<PaperQuestionDto> = emptyList(),
+)
+
+@Serializable
+data class PaperQuestionDto(
+  val number: Int = 0,
+  val options: Map<String, String> = emptyMap(),
+  val answer: String? = null,
+  val stem: String? = null,
+  val score: Int? = null,
+)

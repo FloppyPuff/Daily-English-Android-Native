@@ -25,6 +25,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -37,6 +38,10 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import com.dailyenglish.nativeapp.feature.papers.PaperGroupScreen
+import com.dailyenglish.nativeapp.feature.papers.PaperSetScreen
+import com.dailyenglish.nativeapp.feature.papers.PapersScreen
+import com.dailyenglish.nativeapp.feature.papers.PapersViewModel
 import com.dailyenglish.nativeapp.feature.settings.SettingsScreen
 import com.dailyenglish.nativeapp.feature.study.ComingSoonScreen
 import com.dailyenglish.nativeapp.feature.study.FocusSheet
@@ -60,10 +65,15 @@ private val topDestinations = listOf(
 @Composable
 fun MainNavigation(
   studyViewModel: StudyViewModel,
+  papersViewModel: PapersViewModel,
   snackbarHostState: SnackbarHostState,
   onLoginRequested: () -> Unit,
 ) {
   val ui by studyViewModel.state.collectAsStateWithLifecycle()
+  val papersUi by papersViewModel.state.collectAsStateWithLifecycle()
+  LaunchedEffect(papersViewModel) {
+    papersViewModel.messages.collect { snackbarHostState.showSnackbar(it) }
+  }
   val backStack = rememberNavBackStack(Today)
   val current = backStack.lastOrNull()
   var showFocus by rememberSaveable { mutableStateOf(false) }
@@ -140,6 +150,33 @@ fun MainNavigation(
               onWords = { backStack.add(Words("new")) },
               onSentences = { backStack.add(Sentences) },
               onReview = { backStack.add(Review) },
+              onPapers = { backStack.add(Papers) },
+            )
+          }
+          entry<Papers> {
+            PapersScreen(ui = papersUi, progress = ui.progress, onOpenPaper = { backStack.add(PaperSet(it)) })
+          }
+          entry<PaperSet> { key ->
+            PaperSetScreen(
+              ui = papersUi,
+              progress = ui.progress,
+              setId = key.id,
+              onLoad = papersViewModel::openPaper,
+              onOpenGroup = { backStack.add(PaperGroup(key.id, it)) },
+            )
+          }
+          entry<PaperGroup> { key ->
+            PaperGroupScreen(
+              ui = papersUi,
+              setId = key.setId,
+              groupIndex = key.index,
+              onLoad = papersViewModel::openGroup,
+              onPick = papersViewModel::pick,
+              onAnswer = papersViewModel::updateAnswer,
+              onCheck = papersViewModel::toggleReference,
+              onSubmit = papersViewModel::submit,
+              onRate = papersViewModel::rate,
+              onReset = papersViewModel::reset,
             )
           }
           entry<Words> { key ->
@@ -211,7 +248,7 @@ fun MainNavigation(
 
 private fun isSelected(current: NavKey?, target: NavKey): Boolean = when (target) {
   Today -> current is Today
-  Practice -> current is Practice || current is Words || current is Sentences || current is Review
+  Practice -> current is Practice || current is Words || current is Sentences || current is Review || current is Papers || current is PaperSet || current is PaperGroup
   Notebook -> current is Notebook
   Stats -> current is Stats
   else -> false
@@ -223,6 +260,9 @@ private fun titleFor(key: NavKey?): String = when (key) {
   is Words -> "词汇练习"
   Sentences -> "句子翻译"
   Review -> "复习计划"
+  Papers -> "真题练习"
+  is PaperSet -> "试卷"
+  is PaperGroup -> "真题练习"
   Notebook -> "我的笔记"
   Stats -> "学习记录"
   Settings -> "学习设置"

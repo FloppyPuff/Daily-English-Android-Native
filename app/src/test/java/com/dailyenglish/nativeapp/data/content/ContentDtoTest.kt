@@ -40,4 +40,14 @@ class ContentDtoTest {
     assertEquals(44, doc.sets.size)
     assertTrue(doc.sets.any { it.id == "2025-2" })
   }
+
+  @Test
+  fun paperParsesWithClozeAndTranslation() {
+    val paper = json.decodeFromString<PaperDto>(source("papers/1998-1.json"))
+    assertEquals("1998-1", paper.id)
+    assertTrue(paper.sections.isNotEmpty())
+    val groups = paper.sections.flatMap { it.groups }
+    assertTrue(groups.any { it.type == "cloze" && it.questions.first().options.isNotEmpty() })
+    assertTrue(groups.any { it.type == "translation_sentences" && it.questions.first().answer != null })
+  }
 }

@@ -42,6 +42,10 @@ class StateMapper @Inject constructor(
     )
   }
 
+  suspend fun savePaper(key: String, record: PaperRecord) {
+    dao.upsertPaper(record.toEntity(key))
+  }
+
   override suspend fun replaceAll(state: AppState) {
     val normalized = normalizeLegacy(state)
     database.withTransaction {

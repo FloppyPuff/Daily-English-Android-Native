@@ -1,7 +1,7 @@
 # Daily English Native
 
 Daily English 的原生 Android 版：Kotlin + Jetpack Compose + Material 3。
-与现有 Capacitor 版并行安装，当前完成 **M1（核心学习 + 账号同步）**。
+与现有 Capacitor 版并行安装，当前完成 **M1（核心学习 + 账号同步）与 M2（真题）**。
 
 ## 项目标识
 
@@ -9,7 +9,7 @@ Daily English 的原生 Android 版：Kotlin + Jetpack Compose + Material 3。
 - Kotlin namespace / package：`com.dailyenglish.nativeapp`
   （`native` 是 Java 关键字，不能作为包名；applicationId 不受此限制）
 - 桌面名：`Daily English Native`
-- 版本：`0.1.0`（versionCode 1）
+- 版本：`0.2.0`（versionCode 2）
 
 ## M1 已实现
 
@@ -23,6 +23,15 @@ Daily English 的原生 Android 版：Kotlin + Jetpack Compose + Material 3。
 - 原生 TTS（系统英语语音包）；专注计时器；学习设置。
 - Room 本地进度、Keystore 加密会话、version 3 状态 JSON、409 合并、WorkManager 重试。
 - 笔记/记录入口显示下一阶段空态（M3）。
+
+## M2 已实现
+
+- 44 套考研真题（1998–2025，英语/英语一/英语二），按年份排序与方向筛选。
+- 套题页按 section 分组，显示题型、题数、分值、完成状态与来源说明。
+- 完形/阅读逐题选项作答、提交批改、正确/错误高亮与得分。
+- 完形原文空格随作答实时回填；阅读 Part B 仅原文时明确标注、不提供作答。
+- 段落翻译/划线句子翻译：输入自动保存、对照参考译文、自我评估。
+- 真题记录写入 `papers` 并随 version 3 状态同步；冷启动保留。
 
 ## 技术栈
 
@@ -38,9 +47,10 @@ native-android/
     data/content|local|remote      # 内容、Room、会话、Retrofit
     data/repository                # 进度、认证、同步
     feature/auth|study|settings    # Compose 页面与 ViewModel
+    feature/papers                 # 真题列表、套题、分组练习
     ui/theme|navigation            # 品牌主题、Navigation 3
-  app/src/test/                    # 33 个 JVM 单测
-  app/src/androidTest/             # 5 个设备测试
+  app/src/test/                    # 37 个 JVM 单测
+  app/src/androidTest/             # 6 个设备测试
 ```
 
 ## 构建
@@ -57,20 +67,20 @@ cd native-android
 APK：`app/build/outputs/apk/debug/app-debug.apk`。
 
 当前交付（2026-10-18）：桌面副本
-`C:\Users\fjh28\Desktop\Daily-English-Native-0.1.0-debug.apk`，
-SHA-256 `bf6afd65bd30fd96f218e2c0900185ce7b462b701bc854fb5d46604dd77fa32d`。
+`C:\Users\fjh28\Desktop\Daily-English-Native-0.2.0-debug.apk`，
+SHA-256 `4d0f9639e5c4725ee3eb79465e2e74125a106ccead6fb30e3b67d18f71c8e5f0`。
 重新构建后校验和会变化。
 
 ## 测试
 
 ```powershell
-.\gradlew.bat testDebugUnitTest          # 33 tests
-.\gradlew.bat connectedDebugAndroidTest  # 5 tests on device
+.\gradlew.bat testDebugUnitTest          # 37 tests
+.\gradlew.bat connectedDebugAndroidTest  # 6 tests on device
 ```
 
 已覆盖：SRS 四档间隔与上限、队列排序、每日计划、统计、状态校验、v1 词头迁移、
-merge 冲突、状态 JSON 往返、Room 持久化、MockWebServer 登录/401/409、
-Keystore 会话加密、WorkManager 初始化。
+merge 冲突、状态 JSON 往返、真题 DTO 解析/分组 key/判分/记录、Room 持久化、
+MockWebServer 登录/401/409、Keystore 会话加密、WorkManager 初始化。
 
 ## 账号与同步
 
@@ -95,14 +105,25 @@ Keystore 会话加密、WorkManager 初始化。
   “邮箱或密码不正确”；服务端日志 UA 为 `okhttp/4.12.0`。
 - `connectedDebugAndroidTest`：5/5 通过；JVM 单测 33/33 通过。
 
+### M2（2026-10-18）
+
+- 真题目录 44 套；全部/英语二/英语一/英语筛选正常；年份徽标居中。
+- 2025 英语二：6 组；2025 英语一：6 组；2005 英语：7 组（含 Part B 仅原文）。
+- 完形 20 题全答后提交，显示 `已批改 5 / 20 题`；阅读 5 题提交显示 `3 / 5`
+  并高亮正确答案、标出错误项；选中项边框清晰可辨。
+- 翻译输入、参考译文展开、`已经理解` 自评与提示均正常。
+- Part B 显示“仅公开答案字母…只留原文精读”，无作答控件。
+- 记录在返回套题页、冷启动/覆盖安装后保留；JVM 37/37、设备 6/6 通过。
+
 ## 已知边界
 
 - 成功登录、token 写入与跨设备同步尚未用真实账号实测；错误密码路径已验证。
 - WorkManager 初始化与调度器注入已验证；离线重试的完整链路需要登录账号后观察。
-- 真题（M2）、完整笔记/统计/备份/修改密码/平板双栏（M3）尚未实现。
+- 完整笔记/统计/热力图/备份/修改密码/平板双栏（M3）尚未实现。
 - 当前为 **debug 签名**；长期分发前需 release keystore。
 - 朗读依赖系统英语语音包；缺失时提示。Manifest 已声明 `TTS_SERVICE` 查询。
 - 内容随 APK 打包；题库更新需重建。
+- 早期真题部分 section 缺少分值，界面只显示题数。
 
 ## 文档
 

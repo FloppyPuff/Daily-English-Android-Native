@@ -26,6 +26,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dailyenglish.nativeapp.feature.auth.AuthScreen
 import com.dailyenglish.nativeapp.feature.auth.AuthViewModel
+import com.dailyenglish.nativeapp.feature.papers.PapersViewModel
 import com.dailyenglish.nativeapp.feature.study.StudyViewModel
 import com.dailyenglish.nativeapp.ui.navigation.MainNavigation
 
@@ -33,6 +34,7 @@ import com.dailyenglish.nativeapp.ui.navigation.MainNavigation
 fun AppRoot(
   appViewModel: AppViewModel = hiltViewModel(),
   studyViewModel: StudyViewModel = hiltViewModel(),
+  papersViewModel: PapersViewModel = hiltViewModel(),
 ) {
   val appState by appViewModel.uiState.collectAsStateWithLifecycle()
   val snackbar = remember { SnackbarHostState() }
@@ -57,6 +59,7 @@ fun AppRoot(
     }
     else -> MainNavigation(
       studyViewModel = studyViewModel,
+      papersViewModel = papersViewModel,
       snackbarHostState = snackbar,
       onLoginRequested = appViewModel::requestAuth,
     )

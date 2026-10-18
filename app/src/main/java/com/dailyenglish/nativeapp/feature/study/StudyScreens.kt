@@ -226,6 +226,7 @@ fun PracticeScreen(
   onWords: () -> Unit,
   onSentences: () -> Unit,
   onReview: () -> Unit,
+  onPapers: () -> Unit,
 ) {
   if (ui.loading) {
     StudyLoading()
@@ -269,19 +270,7 @@ fun PracticeScreen(
       )
     }
     item {
-      Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = MaterialTheme.shapes.large,
-        modifier = Modifier.fillMaxWidth(),
-      ) {
-        Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
-          Column(Modifier.weight(1f)) {
-            Text("真题练习", style = MaterialTheme.typography.titleMedium)
-            Text("44 套考研真题，下一阶段开放", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-          }
-          Text("M2", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
-        }
-      }
+      PracticeCard("真题练习", "44 套考研真题，逐组练习", Icons.Outlined.School, onPapers)
     }
     if (plan != null && plan.active != "done") {
       item {
