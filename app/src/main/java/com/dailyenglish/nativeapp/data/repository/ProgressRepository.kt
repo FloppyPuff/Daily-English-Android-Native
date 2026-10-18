@@ -134,6 +134,16 @@ class ProgressRepository @Inject constructor(
     }
   }
 
+  suspend fun importState(imported: AppState) {
+    mutex.withLock {
+      val normalized = normalizeLegacy(imported)
+      mapper.replaceAll(normalized)
+      _state.value = normalized
+      _loaded.value = true
+      syncTrigger.markDirty()
+    }
+  }
+
   private suspend fun mutate(block: suspend (AppState) -> AppState) {
     mutex.withLock {
       val next = block(_state.value)

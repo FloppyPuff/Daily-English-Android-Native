@@ -1,7 +1,13 @@
 package com.dailyenglish.nativeapp.ui.navigation
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
@@ -17,6 +23,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -38,12 +46,13 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import com.dailyenglish.nativeapp.feature.notebook.NotebookScreen
 import com.dailyenglish.nativeapp.feature.papers.PaperGroupScreen
 import com.dailyenglish.nativeapp.feature.papers.PaperSetScreen
 import com.dailyenglish.nativeapp.feature.papers.PapersScreen
 import com.dailyenglish.nativeapp.feature.papers.PapersViewModel
 import com.dailyenglish.nativeapp.feature.settings.SettingsScreen
-import com.dailyenglish.nativeapp.feature.study.ComingSoonScreen
+import com.dailyenglish.nativeapp.feature.stats.StatsScreen
 import com.dailyenglish.nativeapp.feature.study.FocusSheet
 import com.dailyenglish.nativeapp.feature.study.PracticeScreen
 import com.dailyenglish.nativeapp.feature.study.ReviewScreen
@@ -78,59 +87,89 @@ fun MainNavigation(
   val current = backStack.lastOrNull()
   var showFocus by rememberSaveable { mutableStateOf(false) }
 
-  Scaffold(
-    containerColor = MaterialTheme.colorScheme.background,
-    snackbarHost = { SnackbarHost(snackbarHostState) },
-    topBar = {
-      TopAppBar(
-        title = {
-          Column {
-            Text(titleFor(current), style = MaterialTheme.typography.titleLarge)
-            Text("A LITTLE, EVERY DAY", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-          }
-        },
-        navigationIcon = {
-          if (backStack.size > 1) {
-            IconButton(onClick = { backStack.removeLastOrNull() }) {
-              Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
+  BoxWithConstraints(Modifier.fillMaxSize()) {
+    val wide = maxWidth >= 600.dp
+    val compactRail = maxHeight < 480.dp
+    Scaffold(
+      containerColor = MaterialTheme.colorScheme.background,
+      snackbarHost = { SnackbarHost(snackbarHostState) },
+      topBar = {
+        TopAppBar(
+          title = {
+            Column {
+              Text(titleFor(current), style = MaterialTheme.typography.titleLarge)
+              Text("A LITTLE, EVERY DAY", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+          },
+          navigationIcon = {
+            if (backStack.size > 1) {
+              IconButton(onClick = { backStack.removeLastOrNull() }) {
+                Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
+              }
+            }
+          },
+          actions = {
+            TextButton(onClick = { showFocus = true }) {
+              Icon(Icons.Outlined.Timer, contentDescription = null)
+              Text(
+                if (ui.focus.running) formatClock(ui.focus.remainingSeconds) else "专注",
+                modifier = Modifier.padding(start = 6.dp),
+              )
+            }
+            IconButton(onClick = { backStack.add(Settings) }) {
+              Icon(Icons.Outlined.Settings, contentDescription = "学习设置")
+            }
+          },
+          colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
+        )
+      },
+      bottomBar = {
+        if (!wide) {
+          NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+            topDestinations.forEach { destination ->
+              NavigationBarItem(
+                selected = isSelected(current, destination.key),
+                onClick = {
+                  if (backStack.lastOrNull() != destination.key) {
+                    backStack.clear()
+                    backStack.add(destination.key)
+                  }
+                },
+                icon = { Icon(destination.icon, contentDescription = null) },
+                label = { Text(destination.label) },
+              )
             }
           }
-        },
-        actions = {
-          TextButton(onClick = { showFocus = true }) {
-            Icon(Icons.Outlined.Timer, contentDescription = null)
-            Text(
-              if (ui.focus.running) formatClock(ui.focus.remainingSeconds) else "专注",
-              modifier = Modifier.padding(start = 6.dp),
-            )
-          }
-          IconButton(onClick = { backStack.add(Settings) }) {
-            Icon(Icons.Outlined.Settings, contentDescription = "学习设置")
-          }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
-      )
-    },
-    bottomBar = {
-      NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-        topDestinations.forEach { destination ->
-          NavigationBarItem(
-            selected = isSelected(current, destination.key),
-            onClick = {
-              if (backStack.lastOrNull() != destination.key) {
-                backStack.clear()
-                backStack.add(destination.key)
-              }
-            },
-            icon = { Icon(destination.icon, contentDescription = null) },
-            label = { Text(destination.label) },
-          )
         }
-      }
-    },
-  ) { innerPadding ->
-    Box(Modifier.padding(innerPadding)) {
-      NavDisplay(
+      },
+    ) { innerPadding ->
+      Row(Modifier.padding(innerPadding).fillMaxSize()) {
+        if (wide) {
+          NavigationRail(
+            containerColor = MaterialTheme.colorScheme.surface,
+            windowInsets = WindowInsets(0, 0, 0, 0),
+          ) {
+            Spacer(Modifier.height(8.dp))
+            topDestinations.forEach { destination ->
+              NavigationRailItem(
+                selected = isSelected(current, destination.key),
+                onClick = {
+                  if (backStack.lastOrNull() != destination.key) {
+                    backStack.clear()
+                    backStack.add(destination.key)
+                  }
+                },
+                icon = { Icon(destination.icon, contentDescription = destination.label) },
+                label = if (compactRail) null else {
+                  { Text(destination.label) }
+                },
+                alwaysShowLabel = false,
+              )
+            }
+          }
+        }
+        Box(Modifier.weight(1f)) {
+          NavDisplay(
         backStack = backStack,
         onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
         entryProvider = entryProvider {
@@ -212,26 +251,32 @@ fun MainNavigation(
             )
           }
           entry<Notebook> {
-            ComingSoonScreen(
-              icon = Icons.Outlined.BookmarkBorder,
-              eyebrow = "SECOND STAGE",
-              title = "我的笔记，马上就好。",
-              body = "收藏词和收藏句会在 M3 阶段回到这里。现在可以先在词卡和句子里收藏，数据不会丢。",
+            NotebookScreen(
+              onOpenWord = { backStack.add(Words("browse", it)) },
+              onOpenSentence = {
+                studyViewModel.selectSentence(it)
+                backStack.add(Sentences)
+              },
+              onPracticeWords = {
+                studyViewModel.startSession(it)
+                backStack.add(Words(it))
+              },
+              onPracticeSentences = {
+                studyViewModel.selectSentence(it)
+                backStack.add(Sentences)
+              },
             )
           }
           entry<Stats> {
-            ComingSoonScreen(
-              icon = Icons.Outlined.BarChart,
-              eyebrow = "THIRD STAGE",
-              title = "把积累，看得见。",
-              body = "学习记录、七日节奏和 12 周热力图会在 M3 阶段补上。M1 先保证每一次练习都被真实记录。",
-            )
+            StatsScreen()
           }
           entry<Settings> {
             SettingsScreen(onLoginRequested = onLoginRequested)
           }
         },
-      )
+          )
+        }
+      }
     }
   }
 

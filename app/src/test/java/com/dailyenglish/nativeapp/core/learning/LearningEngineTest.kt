@@ -1,5 +1,6 @@
 package com.dailyenglish.nativeapp.core.learning
 
+import com.dailyenglish.nativeapp.core.model.PaperRecord
 import com.dailyenglish.nativeapp.core.model.Settings
 import com.dailyenglish.nativeapp.core.model.StudyEvent
 import com.dailyenglish.nativeapp.core.model.createState
@@ -145,5 +146,34 @@ class LearningEngineTest {
   fun spellingIsTrimmedAndCaseInsensitive() {
     assertTrue(LearningEngine.checkSpelling("  Abandon ", "abandon"))
     assertFalse(LearningEngine.checkSpelling("abandons", "abandon"))
+  }
+
+  @Test
+  fun heatmapKeepsTwelveWeeksOfUniqueExamEvents() {
+    val state = createState().copy(
+      events = listOf(
+        StudyEvent("word", "alpha", at = at, exam = "cet6"),
+        StudyEvent("word", "alpha", at = at + 1, exam = "cet6"),
+        StudyEvent("sentence", "s001", at = at + 2, exam = "cet6"),
+        StudyEvent("focus", seconds = 600, at = at, exam = "cet6"),
+        StudyEvent("word", "alpha", at = at, exam = "postgrad"),
+      ),
+    )
+    val stats = LearningEngine.statistics(state, listOf(word("alpha")), at)
+    assertEquals(84, stats.heatmap.size)
+    assertEquals(localDay(at), stats.heatmap.last().day)
+    assertEquals(2, stats.heatmap.last().count)
+    assertEquals(1, stats.heatmap.last().level)
+    assertTrue(stats.heatmap.all { it.count <= 2 })
+  }
+
+  @Test
+  fun mistakesQueueIncludesWrongPaperWords() {
+    val words = listOf(word("alpha"), word("beta"), word("gamma"))
+    val state = createState().copy(
+      records = mapOf("alpha" to com.dailyenglish.nativeapp.core.model.WordRecord(difficult = true)),
+      papers = mapOf("2025-2#0-0" to PaperRecord(words = listOf("beta"))),
+    )
+    assertEquals(listOf("alpha", "beta"), LearningEngine.buildQueue(words, state, "mistakes", at).map { it.id })
   }
 }

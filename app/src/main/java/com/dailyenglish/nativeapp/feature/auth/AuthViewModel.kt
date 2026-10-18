@@ -2,6 +2,7 @@ package com.dailyenglish.nativeapp.feature.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dailyenglish.nativeapp.core.security.PasswordRules
 import com.dailyenglish.nativeapp.data.repository.AuthException
 import com.dailyenglish.nativeapp.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -47,8 +48,8 @@ class AuthViewModel @Inject constructor(
     val email = current.email.trim()
     val problem = when {
       !Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$").matches(email) -> "请输入有效的邮箱地址"
-      current.password.length < 8 -> "密码至少 8 位"
-      !current.password.any { it.isLetter() } || !current.password.any { it.isDigit() } -> "密码需同时包含字母和数字"
+      current.mode == AuthMode.REGISTER -> PasswordRules.problem(current.password).orEmpty()
+      current.password.isEmpty() -> "请填写密码"
       else -> ""
     }
     if (problem.isNotEmpty()) {

@@ -117,4 +117,24 @@ class ProgressRepositoryTest {
     reloaded.load()
     assertEquals(1, reloaded.state.value.papers.getValue("2025-2#0-0").correct)
   }
+
+  @Test
+  fun importedStateReplacesLocalRowsAndMarksDirty() = runBlocking {
+    val repository = ProgressRepository(dao, mapper, trigger, CoroutineScope(Dispatchers.Unconfined))
+    repository.load()
+    repository.rateWord("abandon", "good")
+    repository.toggleSavedWord("abandon")
+    val before = trigger.count
+
+    val imported = createState().copy(savedWords = listOf("sustain"))
+    repository.importState(imported)
+    assertTrue(trigger.count > before)
+    assertTrue(repository.state.value.records.isEmpty())
+    assertEquals(listOf("sustain"), repository.state.value.savedWords)
+
+    val reloaded = ProgressRepository(dao, mapper, trigger, CoroutineScope(Dispatchers.Unconfined))
+    reloaded.load()
+    assertTrue(reloaded.state.value.records.isEmpty())
+    assertEquals(listOf("sustain"), reloaded.state.value.savedWords)
+  }
 }

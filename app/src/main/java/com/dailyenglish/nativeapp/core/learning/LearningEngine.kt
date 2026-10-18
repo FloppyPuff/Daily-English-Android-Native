@@ -43,6 +43,8 @@ fun addDays(at: Long, days: Int): Long {
 
 data class WeekSlice(val day: String, val label: String, val words: Int, val sentences: Int)
 
+data class HeatCell(val day: String, val count: Int, val level: Int)
+
 data class Statistics(
   val todayWords: Int,
   val todayNew: Int,
@@ -60,6 +62,7 @@ data class Statistics(
   val streak: Int,
   val week: List<WeekSlice>,
   val activeDays: Int,
+  val heatmap: List<HeatCell> = emptyList(),
 )
 
 data class PlanStep(
@@ -145,7 +148,10 @@ object LearningEngine {
     val bank = words.filter { it.exams.contains(state.settings.exam) }
     val filtered = when (mode) {
       "review" -> bank.filter { state.records[it.id]?.due?.let { due -> due <= at } == true }
-      "mistakes" -> bank.filter { state.records[it.id]?.difficult == true }
+      "mistakes" -> {
+        val paperWords = state.papers.values.flatMap { it.words }.toSet()
+        bank.filter { state.records[it.id]?.difficult == true || paperWords.contains(it.id) }
+      }
       "saved" -> bank.filter { state.savedWords.contains(it.id) }
       "all" -> bank
       else -> bank.filter { state.records[it.id] == null }
@@ -187,6 +193,24 @@ object LearningEngine {
       WeekSlice(day, label, unique(events, "word"), unique(events, "sentence"))
     }
     val paperEvents = relevant.filter { it.type == "paper" }
+    val heatCounts = relevant
+      .filter { it.type != "focus" }
+      .groupBy { localDay(it.at) }
+      .mapValues { (_, events) -> events.map { "${it.type}:${it.id}" }.toSet().size }
+    val heatmap = (0 until 84).map { offset ->
+      val day = localDay(addDays(at, -83 + offset))
+      val count = heatCounts[day] ?: 0
+      HeatCell(
+        day = day,
+        count = count,
+        level = when {
+          count > 20 -> 3
+          count > 5 -> 2
+          count > 0 -> 1
+          else -> 0
+        },
+      )
+    }
     return Statistics(
       todayWords = unique(todayEvents, "word"),
       todayNew = unique(todayEvents.filter { it.isNew == true }, "word"),
@@ -204,6 +228,7 @@ object LearningEngine {
       streak = streak,
       week = week,
       activeDays = active.size,
+      heatmap = heatmap,
     )
   }
 

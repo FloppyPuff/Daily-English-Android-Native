@@ -1,39 +1,56 @@
 package com.dailyenglish.nativeapp.feature.settings
 
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FileDownload
+import androidx.compose.material.icons.outlined.FileUpload
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dailyenglish.nativeapp.core.sync.BackupCodec
 import com.dailyenglish.nativeapp.data.repository.AuthState
 import com.dailyenglish.nativeapp.data.repository.SyncMode
 import com.dailyenglish.nativeapp.data.repository.SyncStatus
 import com.dailyenglish.nativeapp.feature.study.ExamSwitch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,16 +59,65 @@ fun SettingsScreen(
   viewModel: SettingsViewModel = hiltViewModel(),
 ) {
   val state by viewModel.state.collectAsStateWithLifecycle()
+  val context = LocalContext.current
+  val scope = rememberCoroutineScope()
   var dailyGoal by rememberSaveable { mutableStateOf(state.settings.dailyGoal.toString()) }
   var sentenceGoal by rememberSaveable { mutableStateOf(state.settings.sentenceGoal.toString()) }
   var focusMinutes by rememberSaveable { mutableStateOf(state.settings.focusMinutes.toString()) }
   var exam by rememberSaveable { mutableStateOf(state.settings.exam) }
+  var currentPassword by rememberSaveable { mutableStateOf("") }
+  var nextPassword by rememberSaveable { mutableStateOf("") }
 
   LaunchedEffect(state.settings) {
     dailyGoal = state.settings.dailyGoal.toString()
     sentenceGoal = state.settings.sentenceGoal.toString()
     focusMinutes = state.settings.focusMinutes.toString()
     exam = state.settings.exam
+  }
+  LaunchedEffect(Unit) {
+    viewModel.clearPasswordError()
+  }
+  LaunchedEffect(state.message) {
+    if (state.message.startsWith("密码已修改")) {
+      currentPassword = ""
+      nextPassword = ""
+    }
+  }
+
+  val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+    if (uri == null) return@rememberLauncherForActivityResult
+    viewModel.exportBackup { text ->
+      scope.launch {
+        runCatching {
+          withContext(Dispatchers.IO) {
+            context.contentResolver.openOutputStream(uri)?.use { it.write(text.toByteArray(Charsets.UTF_8)) }
+              ?: error("无法写入文件")
+          }
+        }.onSuccess {
+          viewModel.note("备份已导出，请妥善保存。")
+        }.onFailure {
+          viewModel.note("导出失败，请换一个位置再试。")
+        }
+      }
+    }
+  }
+  val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+    if (uri == null) return@rememberLauncherForActivityResult
+    scope.launch {
+      runCatching {
+        withContext(Dispatchers.IO) {
+          context.contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: error("无法读取文件")
+        }
+      }.onSuccess { bytes ->
+        if (bytes.size > BackupCodec.MAX_BYTES) {
+          viewModel.note("备份文件超过 5 MB 上限。")
+        } else {
+          viewModel.prepareImport(String(bytes, Charsets.UTF_8))
+        }
+      }.onFailure {
+        viewModel.note("读取备份失败，原有数据未改变。")
+      }
+    }
   }
 
   LazyColumn(
@@ -134,6 +200,42 @@ fun SettingsScreen(
                 OutlinedButton(onClick = viewModel::syncNow) { Text("立即同步") }
                 OutlinedButton(onClick = viewModel::logout) { Text("退出登录") }
               }
+              HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+              Text("修改密码", style = MaterialTheme.typography.titleSmall)
+              OutlinedTextField(
+                value = currentPassword,
+                onValueChange = {
+                  currentPassword = it
+                  viewModel.clearPasswordError()
+                },
+                label = { Text("当前密码") },
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                modifier = Modifier.fillMaxWidth(),
+              )
+              OutlinedTextField(
+                value = nextPassword,
+                onValueChange = {
+                  nextPassword = it
+                  viewModel.clearPasswordError()
+                },
+                label = { Text("新密码") },
+                supportingText = { Text("至少 8 位，含字母与数字") },
+                singleLine = true,
+                isError = state.passwordError.isNotBlank(),
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                modifier = Modifier.fillMaxWidth(),
+              )
+              if (state.passwordError.isNotBlank()) {
+                Text(state.passwordError, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+              }
+              OutlinedButton(
+                onClick = { viewModel.changePassword(currentPassword, nextPassword) },
+                enabled = !state.passwordBusy,
+                modifier = Modifier.fillMaxWidth(),
+              ) { Text(if (state.passwordBusy) "修改中…" else "修改密码") }
             }
             is AuthState.Anonymous -> {
               Text("注册后，学习进度保存在你自己的账号里，换设备也能接着学。不登录也可以继续，进度只留在这台设备。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -149,10 +251,59 @@ fun SettingsScreen(
         shape = MaterialTheme.shapes.large,
         modifier = Modifier.fillMaxWidth(),
       ) {
-        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-          Text("数据说明", style = MaterialTheme.typography.titleMedium)
+        Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+          Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Text("跟随壁纸取色", style = MaterialTheme.typography.titleMedium)
+            Text(
+              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) "使用系统的 Material You 配色；关闭时保留品牌绿色。"
+              else "Android 12 及以上可用；当前系统保留品牌绿色。",
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+          }
+          Switch(
+            checked = state.dynamicColor,
+            onCheckedChange = viewModel::setDynamicColor,
+            enabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
+          )
+        }
+      }
+    }
+    item {
+      Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = MaterialTheme.shapes.large,
+        modifier = Modifier.fillMaxWidth(),
+      ) {
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+          Text("进度，留在自己手里。", style = MaterialTheme.typography.titleMedium)
+          Text(
+            "备份是完整的学习状态 JSON，可以恢复到当前版本，也可以被网页版导入。导入会替换这台设备上的进度，操作前会再次确认。",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+          )
+          Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            OutlinedButton(
+              onClick = { exportLauncher.launch(viewModel.fileName()) },
+              modifier = Modifier.weight(1f),
+            ) {
+              Icon(Icons.Outlined.FileDownload, contentDescription = null)
+              Text("导出备份", modifier = Modifier.padding(start = 6.dp))
+            }
+            OutlinedButton(
+              onClick = { importLauncher.launch(arrayOf("application/json", "text/json", "text/plain")) },
+              enabled = !state.importing,
+              modifier = Modifier.weight(1f),
+            ) {
+              Icon(Icons.Outlined.FileUpload, contentDescription = null)
+              Text(if (state.importing) "读取中…" else "恢复备份", modifier = Modifier.padding(start = 6.dp))
+            }
+          }
+          if (state.importing) {
+            LinearProgressIndicator(Modifier.fillMaxWidth())
+          }
+          Text("备份上限 5 MB；导入失败不会改动现有数据。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
           Text("学习进度保存在本机 SQLite；登录后使用与网页版一致的 revision 合并协议。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-          Text("备份导出、修改密码和完整统计将在后续阶段提供。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
       }
     }
@@ -162,6 +313,23 @@ fun SettingsScreen(
     item {
       Text("7,291 个大纲词汇 · 253 句真题句子 · 44 套考研真题", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
+  }
+
+  val pending = state.pendingImport
+  if (pending != null) {
+    AlertDialog(
+      onDismissRequest = viewModel::cancelImport,
+      title = { Text("恢复备份？") },
+      text = {
+        Text("${state.pendingSummary}\n\n恢复会替换这台设备上的学习进度。建议先导出当前备份。确定恢复吗？")
+      },
+      confirmButton = {
+        TextButton(onClick = viewModel::confirmImport, enabled = !state.importing) { Text("恢复备份") }
+      },
+      dismissButton = {
+        TextButton(onClick = viewModel::cancelImport) { Text("取消") }
+      },
+    )
   }
 }
 
